@@ -1,0 +1,36 @@
+# node_modules: tempat semua dependency
+node_modules/
+
+# .env: file environment variables (berisi data sensitif seperti API key)
+.env
+
+# log files
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE-specific
+.vscode/
+.idea/
+
+# build output (jika ada build step)
+dist/
+build/
+
+# coverage tools (misalnya dari testing)
+coverage/
+
+# PM2 process logs (jika pakai PM2)
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# optional: ignore test reports
+test-output/
