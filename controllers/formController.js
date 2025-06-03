@@ -267,8 +267,8 @@ const generatePdf = async (req, res) => {
     const titleX = centerText(titleText, boldFont, 14, pageWidth);
     page.drawText(titleText, {
       x: titleX,
-      y: currentY - 20,
-      size: 14,
+      y: currentY - 15,
+      size: 18,
       font: boldFont,
     });
 
@@ -276,15 +276,15 @@ const generatePdf = async (req, res) => {
     const ownerX = centerText(ownerText, boldFont, 14, pageWidth);
     page.drawText(ownerText, {
       x: ownerX,
-      y: currentY - 35,
-      size: 14,
+      y: currentY - 40,
+      size: 18,
       font: boldFont,
     });
     
     currentY -= titleHeight + (titleFramePadding * 2);
 
     // 2. MAP SECTION
-    const mapHeight = 320;
+    const mapHeight = 340;
     
     // Check if we need a new page for the map
     addNewPageIfNeeded(mapHeight);
@@ -312,14 +312,14 @@ const generatePdf = async (req, res) => {
     });
     
     // Draw north arrow
-    const arrowX = pageWidth - margin - 50;
-    const arrowY = currentY - 20;
+    const arrowX = pageWidth - margin - 40;
+    const arrowY = currentY - 15;
     
     page.drawText('U', {
       x: arrowX,
-      y: arrowY,
+      y: arrowY - 9,
       size: 14,
-      font: boldFont,
+      font: boldFont
     });
     
     // Draw arrow pointing up
@@ -348,7 +348,7 @@ const generatePdf = async (req, res) => {
     
     // 3. LEGEND SECTION
     currentY -= 20;
-    const legendheight = 400;
+    const legendheight = 380;
     const lengendpadding = 10;
 
     page.drawRectangle({
@@ -503,7 +503,7 @@ const generatePdf = async (req, res) => {
     currentY -= lineSpacing;
     
     drawLegendItem('Luas Lahan', form.luas_lahan + ' meter²');
-    drawLegendItem('Jenis Tanah', 'Regosol');
+    // drawLegendItem('Jenis Tanah', 'Regosol');
     drawLegendItem('Jenis Tanaman', form.jenis_tanaman);
     drawLegendItem('Masa Panen', form.masa_panen);
     drawLegendItem('Sumber Air', form.sumber_air);
@@ -511,39 +511,64 @@ const generatePdf = async (req, res) => {
     drawLegendItem('Ketersediaan Air', form.ketersediaan_air);
     drawLegendItem('Metode Pengairan', form.metode_pengairan);
     
-    // Pelaksana survei
-    page.drawText('Pelaksana Survei', {
-      x: labelColumn,
-      y: currentY,
-      size: 10,
-      font: boldFont,
-    });
-    
-    if (Array.isArray(form.pelaksana_survei)) {
+    /// Pelaksana survei
+page.drawText('Pelaksana Survei', {
+  x: labelColumn,
+  y: currentY,
+  size: 10,
+  font: boldFont,
+});
 
-      const surveyorsHeight = lineSpacing * form.pelaksana_survei.length;
-      addNewPageIfNeeded(surveyorsHeight);
-      
-      form.pelaksana_survei.forEach((surveyor, index) => {
-        if (index === 0) {
-          page.drawText(':', {
-            x: colonPosition,
-            y: currentY,
-            size: 10,
-            font: regularFont,
-          });
-        }
-        
-        page.drawText(`${index + 1}. ${surveyor}`, {
-          x: valueColumn,
-          y: currentY,
-          size: 10,
-          font: regularFont,
-        });
-        
-        currentY -= lineSpacing;
+if (Array.isArray(form.pelaksana_survei)) {
+  const namesPerColumn = 3;
+  const total = form.pelaksana_survei.length;
+  const column1 = form.pelaksana_survei.slice(0, namesPerColumn);
+  const column2 = form.pelaksana_survei.slice(namesPerColumn);
+
+  const maxRows = Math.max(column1.length, column2.length);
+  const surveyorsHeight = lineSpacing * maxRows;
+  addNewPageIfNeeded(surveyorsHeight);
+
+  const column2X = valueColumn + 200; // Geser kolom 2 ke kanan (atur sesuai lebar halaman)
+
+  column1.forEach((name, index) => {
+    if (index === 0) {
+      page.drawText(':', {
+        x: colonPosition,
+        y: currentY,
+        size: 10,
+        font: regularFont,
       });
     }
+
+    page.drawText(`${index + 1}. ${name}`, {
+      x: valueColumn,
+      y: currentY,
+      size: 10,
+      font: regularFont,
+    });
+
+    currentY -= lineSpacing;
+  });
+
+  // Reset Y untuk kolom 2
+  let column2Y = currentY + (lineSpacing * column2.length); // Kembali ke posisi atas kolom 1
+
+  column2.forEach((name, index) => {
+    page.drawText(`${index + namesPerColumn + 1}. ${name}`, {
+      x: column2X,
+      y: column2Y,
+      size: 10,
+      font: regularFont,
+    });
+
+    column2Y -= lineSpacing;
+  });
+
+  // Pastikan currentY tetap yang paling rendah (agar tidak tumpang tindih)
+  currentY = Math.min(currentY, column2Y);
+}
+
     
     // 4. DOCUMENTATION SECTION
     page = pdfDoc.addPage([pageWidth, pageHeight]);
@@ -562,7 +587,7 @@ const generatePdf = async (req, res) => {
     const gridColumns = 2;
     const gridRows = 2;
     const photoWidth = usableWidth / gridColumns;
-    const photoHeight = 180; 
+    const photoHeight = 300; 
     const cellPadding = 5;
     
     const totalGridHeight = photoHeight * gridRows;
