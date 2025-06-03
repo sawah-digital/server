@@ -34,3 +34,4 @@ pids
 
 # optional: ignore test reports
 test-output/
+.vercel
